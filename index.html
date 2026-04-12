@@ -130,6 +130,7 @@
     .liveHead{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
     .liveHead h2{margin:0; font-size:44px; letter-spacing:.2px; font-weight:1000;}
     .liveHead p{margin:6px 0 0; color:var(--muted); font-weight:900;}
+    .zoomTip{margin-top:10px !important; display:inline-block; background:#eef4ff; border:1px solid #d6e4ff; color:#1f4f9c !important; padding:10px 12px; border-radius:14px; font-size:14px; line-height:1.3;}
     .stepBadge{background:#eef4ff; border:1px solid #d6e4ff; color:#1f4f9c; font-weight:1000; border-radius:999px; padding:10px 12px; white-space:nowrap; margin-top:6px;}
     .feedback{
       display:none; margin-top:12px; border-radius:16px; padding:12px 12px; font-weight:1000;
@@ -398,6 +399,12 @@
     }
     .wIn{ width:64px; } /* allow 2-digit like 18 / 24 */
     .qIn:disabled, .wIn:disabled{opacity:.55}
+    .inputAlert{
+      outline:4px solid rgba(239,68,68,.50) !important;
+      outline-offset:3px !important;
+      border-color:#ef4444 !important;
+      background:#fff1f2 !important;
+    }
 
     /* thick line after subtract row */
         /* Step box */
@@ -424,6 +431,46 @@
       color:var(--muted);
       text-align:center;
     }
+
+    .algoActionPanel{
+      margin-top:14px;
+      border:2px solid #d9e8ff;
+      background:#f7fbff;
+      border-radius:18px;
+      padding:14px;
+    }
+    .algoActionBtns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin:10px 0;
+    }
+    .algoActionNote{
+      font-size:14px;
+      font-weight:1000;
+      line-height:1.35;
+      text-align:center;
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    .algoActionNote.pupilNote{
+      background:#e8f8ee;
+      border:1px solid #bfe9cb;
+      color:#146b2b;
+    }
+    .algoActionNote.teacherNote{
+      background:#eaf2ff;
+      border:1px solid #cfe0ff;
+      color:#0f4aa4;
+    }
+    .btn.prominent{
+      font-size:22px;
+      padding:16px 22px;
+      border-radius:18px;
+      box-shadow:0 10px 22px rgba(15,42,74,.12);
+    }
+
     .credit{text-align:right; color:var(--muted); font-weight:900; font-size:13px; margin-top:10px;}
 
     /* Drawer */
@@ -490,7 +537,7 @@
         </div>
         <button class="btn blue" id="btnSettings">⚙️ Settings</button>
         <button class="btn" id="btnReset">↺ Reset</button>
-        <button class="btn primary" id="btnNext">Next ▶</button>
+        <button class="btn primary" id="btnNext">Teacher: Next ▶</button>
       </div>
     </div>
 
@@ -500,7 +547,8 @@
           <div class="liveHead">
             <div>
               <h2 id="questionTitle">Divide 246 by 2.</h2>
-              <p id="questionSub">Teacher can press Next, or pupils can fill the algorithm and check step-by-step.</p>
+              <p id="questionSub">Pupils fill in the <b>red-boxed spaces</b> in the algorithm, then press Check Step. Teachers press Next to show the next step.</p>
+              <p class="zoomTip">Zoom tip: Press <b>Ctrl + scroll mouse</b> to zoom in or out to the size you want.</p>
             </div>
             <div class="stepBadge" id="progressBadge">Step 0 of 3</div>
           </div>
@@ -514,12 +562,27 @@
         <div class="card railCard" id="algoCard">
           <h3>Algorithm</h3>
           <div class="smallMuted" style="margin:-2px 0 10px">
-            Fill in <b>all digits</b> in the algorithm (quotient + working). Then press <b>Check Step</b>. The question digits are given.
+            Fill in <b>all digits</b> in the algorithm (quotient + working). Fill the <b>red-boxed spaces</b> first, then press <b>Check Step</b>. The question digits are given.
           </div>
           <div class="algoWrap">
             <div class="algoFit" id="algoFit"></div>
           </div>
           <div class="answerLine" id="answerLine">Answer: —</div>
+
+          <div class="algoActionPanel">
+            <div class="algoActionNote pupilNote">
+              <b>Pupils:</b> Fill in the <b>red-boxed spaces</b> in the algorithm first, then press <b>Check Step</b>.
+            </div>
+
+            <div class="algoActionBtns">
+              <button class="btn green prominent" id="btnCheck">✔ Check Step</button>
+              <button class="btn gold" id="btnHint">Hint</button>
+            </div>
+
+            <div class="algoActionNote teacherNote">
+              <b>Teachers:</b> Press <b>Teacher: Next</b> to show the next step.
+            </div>
+          </div>
         </div>
 
         <div class="card railCard">
@@ -530,12 +593,13 @@
         </div>
 
         <div class="card railCard">
-          <h3>Current Controls</h3>
-          <div class="smallMuted" id="currentPrompt">Next: divide the first place.</div>
-          <div class="smallMuted" style="margin-top:10px">Pupils: fill the current step in the algorithm, then press Check Step.</div>
+          <h3>Teacher Prompt</h3>
+          <div class="smallMuted" id="currentPrompt">Teacher: show the first step.</div>
+          <div class="smallMuted" style="margin-top:10px">
+            <b>Check Step</b> is for pupils to try their own working.
+            <b>Teacher: Next</b> is for teachers to reveal the next step.
+          </div>
           <div class="railBtns">
-            <button class="btn green" id="btnCheck">Check Step</button>
-            <button class="btn gold" id="btnHint">Hint</button>
             <button class="btn blue" id="btnNewQ" style="display:none">New Question</button>
           </div>
         </div>
@@ -786,6 +850,15 @@
   function clearFeedback(){
     ui.feedbackBox.className = "feedback";
     ui.feedbackBox.textContent = "";
+  }
+
+  function clearRemainderAlert(){
+    if (els.remInput) els.remInput.classList.remove("inputAlert");
+    if (els.remFinal) els.remFinal.classList.remove("inputAlert");
+  }
+  function showRemainderAlert(){
+    if (els.remInput) els.remInput.classList.add("inputAlert");
+    if (els.remFinal) els.remFinal.classList.add("inputAlert");
   }
 
   function makeDisc(pk){
@@ -1318,8 +1391,8 @@ function buildAlgorithm(){
     const placeLower = pk==="h" ? "hundreds" : pk==="t" ? "tens" : "ones";
     ui.stepTitle.textContent = `STEP ${stepIdx+1}`;
     ui.stepText.textContent = `Divide the ${placeLower} by ${q.divisor}.`;
-    ui.currentPrompt.textContent = `Now: divide the ${placeLower}.`;
-    ui.btnNext.textContent = "Next ▶";
+    ui.currentPrompt.textContent = `Teacher: press Next to show how to divide the ${placeLower}.`;
+    ui.btnNext.textContent = "Teacher: Next ▶";
     ui.btnNewQ.style.display = "none";
     ui.pillAns.textContent = "?";
     ui.answerLine.textContent = `Answer: ${q.dividend} ÷ ${q.divisor} = ?`;
@@ -1357,6 +1430,57 @@ function buildAlgorithm(){
     if (finished) return;
     busy = true;
     clearFeedback();
+    clearRemainderAlert();
+
+    // Final remainder validation state: the division steps are done,
+    // but the pupil still needs to fill the remainder box(es).
+    if (stepIdx >= plan.length){
+      const rem = q.dividend % q.divisor;
+      const typedFinal = String(els.remFinal?.value ?? "").trim();
+      const typedTop = String(els.remInput?.value ?? "").trim();
+
+      if (typedFinal === ""){
+        showRemainderAlert();
+        playWrong();
+        showFeedback("bad","Please fill in the remainder box. If there is no remainder, key in 0.");
+        busy = false;
+        return;
+      }
+      if (clampInt(typedFinal,0,9) !== rem){
+        showRemainderAlert();
+        playWrong();
+        showFeedback("bad","Check the remainder again.");
+        busy = false;
+        return;
+      }
+      if (els.remInput){
+        if (typedTop === ""){
+          showRemainderAlert();
+          playWrong();
+          showFeedback("bad","Please fill in the top remainder box (R).");
+          busy = false;
+          return;
+        }
+        if (clampInt(typedTop,0,9) !== rem){
+          showRemainderAlert();
+          playWrong();
+          showFeedback("bad","Check the top remainder (R) again.");
+          busy = false;
+          return;
+        }
+      }
+
+      finished = true;
+      ui.pillAns.textContent = finalAnswerText();
+      ui.answerLine.textContent = `Answer: ${q.dividend} ÷ ${q.divisor} = ${finalAnswerText()}`;
+      showFeedback("ok","🎉 Correct! Well done!");
+      playCorrect();
+      burstConfetti();
+      enableInputs();
+      updateUI();
+      busy = false;
+      return;
+    }
 
     let s = plan[stepIdx];
     if (!s){
@@ -1496,15 +1620,17 @@ function buildAlgorithm(){
       } else {
         // pupils: bottom remainder box must always be filled (0–9)
         if (typedFinal === ""){
+          showRemainderAlert();
           playWrong();
-          showFeedback("bad","Fill the remainder box at the bottom (0–9).");
+          showFeedback("bad","Please fill in the remainder box. If there is no remainder, key in 0.");
           finished = false;
           busy = false;
           return;
         }
         if (clampInt(typedFinal,0,9) !== rem){
+          showRemainderAlert();
           playWrong();
-          showFeedback("bad","Bottom remainder is not correct yet.");
+          showFeedback("bad","Check the remainder again.");
           finished = false;
           busy = false;
           return;
@@ -1514,15 +1640,17 @@ function buildAlgorithm(){
         if (els.remInput){
           const typedTop = String(els.remInput.value ?? "").trim();
           if (typedTop === ""){
+            showRemainderAlert();
             playWrong();
-            showFeedback("bad","Fill the top remainder box (R).");
+            showFeedback("bad","Please fill in the top remainder box (R).");
             finished = false;
             busy = false;
             return;
           }
           if (clampInt(typedTop,0,9) !== rem){
+            showRemainderAlert();
             playWrong();
-            showFeedback("bad","Top remainder (R) is not correct yet.");
+            showFeedback("bad","Check the top remainder (R) again.");
             finished = false;
             busy = false;
             return;
@@ -1530,6 +1658,7 @@ function buildAlgorithm(){
         }
       }
 
+      clearRemainderAlert();
       ui.pillAns.textContent = finalAnswerText();
       ui.answerLine.textContent = `Answer: ${q.dividend} ÷ ${q.divisor} = ${finalAnswerText()}`;
       showFeedback("ok","🎉 Correct! Well done!");
@@ -1582,9 +1711,10 @@ function buildAlgorithm(){
     ui.pillAns.textContent = "?";
     ui.questionTitle.textContent = `Divide ${q.dividend} by ${q.divisor}.`;
     ui.answerLine.textContent = `Answer: ${q.dividend} ÷ ${q.divisor} = ?`;
-    ui.btnNext.textContent = "Next ▶";
+    ui.btnNext.textContent = "Teacher: Next ▶";
     ui.btnNewQ.style.display = "none";
     clearFeedback();
+    clearRemainderAlert();
 
     finished = false;
     stepIdx = 0;
